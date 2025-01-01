@@ -12,9 +12,8 @@
     citire: .asciz "%d"
     afisare_ADD_DEL_DEFRAG: .asciz "%d: (%d, %d)\n"
     afisare_GET: .asciz "(%d, %d)\n"
-    afisare_spatiere: .asciz "\n"
     v: 
-        .rept 1000
+        .rept 1024
         .long 0
         .endr
 .text
@@ -43,24 +42,24 @@ ADD:
     je mul_8
     incl %eax
     mul_8:
-        cmp $1000, %eax # daca se da ca input un fisier care ocupa mai mult de 1000 de block-uri
+        cmpl $1024, %eax # daca se da ca input un fisier care ocupa mai mult de 1024 de block-uri
         jg alloc_fail # atunci nu se poate aloca, returnam cazul exceptie
         movl %eax, %ebx # EBX = blocksNeeded
 
         # suitable gap in array
         xorl %ecx, %ecx # ECX = index curent
         leal v, %edi
-        movl $1000, %edx # EDX = marime maxima array
+        movl $1024, %edx # EDX = marime maxima array
 
     loop_search_gap:
         cmpl %edx, %ecx
-        je alloc_fail # daca ECX ajunge la 1000, nu se poate aloca fisierul
+        je alloc_fail # daca ECX ajunge la 1024, nu se poate aloca fisierul
 
         movl %ecx, i # start index potential
         movl %ebx, %eax # blocksNeeded
         addl %ecx, %eax # enda = starta + blocksNeeded
         cmpl %edx, %eax
-        je search_next
+        jg alloc_fail
 
         # verificare gap
         xorl %esi, %esi # ESI = inner-loop index
@@ -128,7 +127,7 @@ GET:
         cmp ID, %eax # daca v[%ecx] = ID
         je found_GET  # determinam valorile start & end
 
-        cmp $1000, %ecx # cazul ID invalid
+        cmp $1024, %ecx # cazul ID invalid
         je not_found_GET # ID-ul nu a fost gasit
 
         incl %ecx # incrementarea contorului
@@ -187,7 +186,7 @@ DEL:
         cmp %eax, ID # daca a fost gasita secventa de blocuri cu ID
         je proc_loop_DEL # trecem la procedura de stergere
 
-        cmp $1000, %ecx # daca nu, nu se sterge nimic
+        cmp $1024, %ecx # daca nu, nu se sterge nimic
         je exit_DEL # si se trece direct la afisare
 
         incl %ecx
@@ -222,7 +221,7 @@ DEFRAG:
     xorl %edx, %edx
 
     loop_assign:
-        cmpl $1000, %ecx # daca indexul a ajuns la finalul vectorului
+        cmpl $1024, %ecx # daca indexul a ajuns la finalul vectorului
         je exit_DEFRAG
         cmpl $0, %eax # daca v[i] = 0
         je end_assign # atunci doar se incrementeaza indexul
@@ -251,14 +250,14 @@ printing_DEL_DEFRAG: # procedura de afisare
     xorl %ecx, %ecx
     movl (%edi, %ecx, 4), %eax
     loop_print_DEL_DEFRAG:
-        cmpl $1000, %ecx # daca am trecut prin tot vectorul
+        cmpl $1024, %ecx # daca am trecut prin tot vectorul
         je exit_PRINTING # iesim din procedura de afisare
         cmpl $0, %eax # daca nu exista ID
         je skip # trecem la urmatoarea pozitie, nu afisam nimic
         movl %eax, %ebx
         movl %ecx, starta
         while_ENDA:
-            cmp $1000, %ecx
+            cmp $1024, %ecx
             je scapare
             cmp %ebx, %eax
             jne scapare
@@ -327,13 +326,6 @@ main:
         jg etexit
 
         sfarsit_loop_op:
-            pushl %eax
-            pushl %ecx
-            pushl $afisare_spatiere
-            call printf
-            add $4, %esp
-            popl %ecx
-            popl %eax
             incl j
             jmp loop_op
 main_ADD:
@@ -395,7 +387,6 @@ main_DEL:
     popl %edx
     popl %eax
     popl %ecx
-
     jmp sfarsit_loop_op
 
 main_DEFRAG:
@@ -406,9 +397,11 @@ main_DEFRAG:
     popl %edx
     popl %eax
     popl %ecx
-
     jmp sfarsit_loop_op
 etexit:
+    pushl $0
+    call fflush
+    popl %eax
     movl $1, %eax
     xorl %ebx, %ebx
     int $0x80
