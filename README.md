@@ -1,1 +1,3 @@
 # tema_asc
+Ambele fisiere de tip ***.S*** parcurg cele 4 operatii cerute in enuntul temei, iar operatia de defragmentare a cazului bidimensional este tratata prin stergerea initiala a fisierelor si, ulterior, adaugarea lor inapoi in "matrice" in prima pozitie disponibila, cu mentiunea de a respecta pozitia fisierului anterior plasat.
+Important: operatia CONCRETE poate opera doar pe fisiere cu dimensiunea maxima de **2<sup>31</sup>-1 bytes**, fiind utilizata functia ***lseek()*** pentru determinarea marimii. Aceasta poate fi inlocuita cu [stat](https://man7.org/linux/man-pages/man2/stat.2.html). 
