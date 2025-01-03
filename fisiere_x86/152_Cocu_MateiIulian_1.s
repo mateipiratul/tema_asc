@@ -25,6 +25,7 @@
     citire: .asciz "%d"
     afisare_ADD_DEL_DEFRAG: .asciz "%d: ((%d, %d), (%d, %d))\n"
     afisare_GET: .asciz "((%d, %d), (%d, %d))\n"
+    afisare_CONCRETE: .asciz "%d\n"
     path: .space 128 # absolute path given as input for CONCRETE
     mat:
         .rept 1048576
@@ -559,6 +560,17 @@ CONCRETE:
         movl %edx, %eax
         incl %eax
         movl %eax, ID
+
+        pushl ID
+        pushl $afisare_CONCRETE
+        call printf
+        addl $8, %esp
+
+        pushl sizeKB
+        pushl $afisare_CONCRETE
+        call printf
+        addl $8, %esp
+
         call ADD
         pushl endY
         pushl indX
