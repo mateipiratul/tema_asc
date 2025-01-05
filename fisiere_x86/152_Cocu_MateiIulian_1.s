@@ -538,9 +538,6 @@ CONCRETE:
         addl $8, %esp
         movl %eax, ID
 
-        cmpl $255, contCRETE
-        jg afisNUL
-
         # lseek function
         pushl $2 # SEEK_END
         pushl $0 # offset
@@ -548,7 +545,6 @@ CONCRETE:
         call lseek
         addl $12, %esp
         movl %eax, %ecx # file size in bytes
-        addl $1023, %ecx
         shrl $10, %ecx # file size in kilobytes
         movl %ecx, sizeKB
 
@@ -571,6 +567,9 @@ CONCRETE:
         call printf
         addl $8, %esp
 
+        cmpl $255, contCRETE
+        jg afisNUL
+
         call ADD
         pushl endY
         pushl indX
@@ -583,12 +582,6 @@ CONCRETE:
         jmp read_dir
 
         afisNUL:
-            movl $255, %ebx
-            xorl %edx, %edx
-            divl %ebx
-            movl %edx, %eax
-            incl %eax
-            movl %eax, ID
             pushl $0
             pushl $0
             pushl $0
